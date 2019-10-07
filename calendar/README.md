@@ -28,6 +28,8 @@ DATEFMT=+%H:%M:%S
 # SHORTFMT=+%H:%M:%S
 HEIGHT=180
 WIDTH=220
+#format=json
+#POSITION=top
 ```
 
 * Add `for_window [class="Yad"] floating enable` to your i3 config file.
