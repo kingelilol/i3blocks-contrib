@@ -31,8 +31,9 @@ case "$BLOCK_BUTTON" in
   if [ "$format" == "json" ] && [ "$POSITION" == "top" ]
   then
       posY=$(($height))
-  else
-	    posY=$(($BLOCK_Y - $HEIGHT))
+  elif [ "$format" == "json" ] && [ "$POSITION" == "bottom" ]
+  then
+      posY=$(($y-$relative_y-$HEIGHT)) #should be right but yad's size isn't mashing the Height
   fi
   i3-msg -q "exec yad --calendar \
         --width=$WIDTH --height=$HEIGHT \
@@ -40,6 +41,17 @@ case "$BLOCK_BUTTON" in
 	    --close-on-unfocus --no-buttons \
 	    --posx=$posX --posy=$posY \
 	    > /dev/null"
+  if [ "$format" == "json" ] && [ "$POSITION" == "bottom" ] # workaroud for problems with yad
+  then
+      i3-msg -m -t subscribe '[ "window" ]' | while read LOGLINE
+      do
+          echo ${LOGLINE}
+          [[ "$(echo ${LOGLINE}|grep focus|grep YAD)" != "" ]] && pkill -P $$ i3-msg
+      done
+      focused=$(i3-msg -t get_workspaces | jq 'map(select(.focused==true))|map(.num)|.[]')
+      realHeight=$(i3-msg -t get_tree |jq  ".nodes[1].nodes[1].nodes|.[]|select(.num==$focused).floating_nodes|.[]|.nodes[0]|select(.name == \"YAD\").rect.height")
+      i3-msg move position $posX $(($y-$relative_y-$realHeight))
+  fi
 esac
 
 if [ "$format" == "json" ]
